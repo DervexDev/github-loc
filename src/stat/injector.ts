@@ -1,9 +1,31 @@
 import { JSX, render } from 'preact'
 
-export function locateRoot() {
-  return document.querySelector(
-    '#repo-content-pjax-container > div > div > div.Layout.Layout--flowRow-until-md.react-repos-overview-margin.Layout--sidebarPosition-end.Layout--sidebarPosition-flowRow-end > div.Layout-sidebar > div > div:nth-child(1) > div > div',
-  )
+const SELECTOR = `#repo-content-pjax-container > div > div > \
+  div.Layout.Layout--flowRow-until-md.react-repos-overview-margin.Layout--sidebarPosition-end.Layout--sidebarPosition-flowRow-end \
+  > div.Layout-sidebar > div > div:nth-child(1) > div > div`
+
+export function locateRoot(): Promise<Element> {
+  return new Promise((resolve) => {
+    const element = document.querySelector(SELECTOR)
+
+    if (element) {
+      return resolve(element)
+    }
+
+    const observer = new MutationObserver(() => {
+      const element = document.querySelector(SELECTOR)
+
+      if (element) {
+        observer.disconnect()
+        resolve(element)
+      }
+    })
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
+  })
 }
 
 export function injectStat(root: Element, stat: JSX.Element) {

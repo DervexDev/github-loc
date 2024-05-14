@@ -3,11 +3,8 @@ import { fetchLoc, loadLoc } from './loader'
 import getTarget from './getTarget'
 import Stat from './Stat'
 
-const root = locateRoot()
-
-if (root) {
+locateRoot().then((root) => {
   const [org, repo] = getTarget()
-
   const stat = Stat({
     org,
     repo,
@@ -22,8 +19,12 @@ if (root) {
     }
   })
 
-  fetchLoc(org, repo).then((loc) => {
-    fetched = true
-    updateStat(value, loc)
-  })
-}
+  fetchLoc(org, repo)
+    .then((loc) => {
+      fetched = true
+      updateStat(value, loc)
+    })
+    .catch((err) => {
+      console.log('Failed to fetch LOC:', err)
+    })
+})
