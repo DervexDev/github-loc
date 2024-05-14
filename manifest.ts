@@ -10,20 +10,31 @@ export default defineManifest({
   version: packageData.version,
   manifest_version: 3,
   icons: {
-    16: 'img/logo-16.png',
-    32: 'img/logo-34.png',
-    48: 'img/logo-48.png',
-    128: 'img/logo-128.png',
+    16: 'logo-16.png',
+    32: 'logo-32.png',
+    48: 'logo-48.png',
+    128: 'logo-128.png',
   },
-  // options_page: 'options.html',
+  options_page: 'src/menu/index.html',
   action: {
-    default_popup: 'src/menu/popup.html',
-    default_icon: 'img/logo-48.png',
+    default_popup: 'src/menu/index.html',
+    default_icon: 'logo-48.png',
   },
   content_scripts: [
     {
       matches: ['*://github.com/*'],
       js: ['src/stat/index.ts'],
+    },
+  ],
+  web_accessible_resources: [
+    {
+      resources: [
+        'public/logo-16.png',
+        'public/logo-32.png',
+        'public/logo-48.png',
+        'public/logo-128.png',
+      ],
+      matches: [],
     },
   ],
   permissions: ['storage'],

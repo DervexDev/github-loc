@@ -1,5 +1,5 @@
 import { createElement, render } from 'preact'
-import { Popup } from './Popup'
+import { Menu } from './Menu'
 import './index.css'
 
-render(createElement(Popup, null), document.getElementById('app') as HTMLElement)
+render(createElement(Menu, null), document.getElementById('app') as HTMLElement)
