@@ -15,3 +15,7 @@ export function injectStat(root: Element, stat: JSX.Element) {
 
   return div.firstElementChild?.lastElementChild!
 }
+
+export function updateStat(stat: Element, value: number) {
+  stat.textContent = value.toLocaleString()
+}

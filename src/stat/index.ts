@@ -1,7 +1,7 @@
-import { locateRoot, injectStat } from './injector'
+import { locateRoot, injectStat, updateStat } from './injector'
+import { fetchLoc, loadLoc } from './loader'
 import getTarget from './getTarget'
 import Stat from './Stat'
-import fetchLoc from './fetchLoc'
 
 const root = locateRoot()
 
@@ -14,8 +14,16 @@ if (root) {
   })
 
   const value = injectStat(root, stat)
+  let fetched = false
 
-  fetchLoc(org, repo).then((data) => {
-    value.textContent = data.loc.toLocaleString()
+  loadLoc(org, repo).then((loc) => {
+    if (!fetched) {
+      updateStat(value, loc)
+    }
+  })
+
+  fetchLoc(org, repo).then((loc) => {
+    fetched = true
+    updateStat(value, loc)
   })
 }
