@@ -32,8 +32,14 @@ export function injectStat(root: Element, stat: JSX.Element) {
   const div = document.createElement('div')
   div.className = 'mt-2'
 
-  root.insertBefore(div, root.lastElementChild)
+  if (root.lastElementChild?.firstElementChild?.textContent?.includes('Report')) {
+    root.insertBefore(div, root.lastElementChild)
+  } else {
+    root.appendChild(div)
+  }
+
   render(stat, div)
+  root.id = 'github-loc'
 
   return div.firstElementChild?.lastElementChild!
 }

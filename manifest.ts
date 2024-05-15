@@ -26,6 +26,9 @@ export default defineManifest({
       js: ['src/stat/index.ts'],
     },
   ],
+  background: {
+    service_worker: 'src/background.ts',
+  },
   web_accessible_resources: [
     {
       resources: [
