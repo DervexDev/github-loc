@@ -3,16 +3,8 @@ import { fetchLoc, loadLoc } from './loader'
 import getTarget from './getTarget'
 import Stat from './Stat'
 
-let injected = false
-
 function main() {
   locateRoot().then((root) => {
-    if (injected) {
-      return
-    }
-
-    injected = true
-
     const [org, repo] = getTarget()
 
     const stat = Stat({

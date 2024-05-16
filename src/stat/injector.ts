@@ -1,36 +1,29 @@
 import { JSX, render } from 'preact'
 
-const SELECTOR = `#repo-content-pjax-container > div > div > \
-  div.Layout.Layout--flowRow-until-md.react-repos-overview-margin.Layout--sidebarPosition-end.Layout--sidebarPosition-flowRow-end \
-  > div.Layout-sidebar > div > div:nth-child(1) > div > div`
+function isInjected(root: Element) {
+  return root.querySelector('#github-loc') !== null
+}
 
 export function locateRoot(): Promise<Element> {
   return new Promise((resolve) => {
-    const element = document.querySelector(SELECTOR)
+    const root = document.evaluate(
+      "//h2[text()='About']",
+      document,
+      null,
+      XPathResult.FIRST_ORDERED_NODE_TYPE,
+      null,
+    ).singleNodeValue?.parentElement
 
-    if (element) {
-      return resolve(element)
+    if (root && !isInjected(root)) {
+      resolve(root)
     }
-
-    const observer = new MutationObserver(() => {
-      const element = document.querySelector(SELECTOR)
-
-      if (element) {
-        observer.disconnect()
-        resolve(element)
-      }
-    })
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    })
   })
 }
 
 export function injectStat(root: Element, stat: JSX.Element) {
   const div = document.createElement('div')
   div.className = 'mt-2'
+  div.id = 'github-loc'
 
   if (root.lastElementChild?.firstElementChild?.textContent?.includes('Report')) {
     root.insertBefore(div, root.lastElementChild)
@@ -39,7 +32,6 @@ export function injectStat(root: Element, stat: JSX.Element) {
   }
 
   render(stat, div)
-  root.id = 'github-loc'
 
   return div.firstElementChild?.lastElementChild!
 }

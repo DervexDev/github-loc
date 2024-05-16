@@ -7,3 +7,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     }
   }
 })
+
+chrome.runtime.onInstalled.addListener(async () => {
+  const ignoredFiles = await chrome.storage.sync.get('ignoredFiles')
+
+  if (!Array.isArray(ignoredFiles.ignoredFiles)) {
+    chrome.storage.sync.set({ ignoredFiles: ['md', 'json', 'yml', 'lock'] })
+  }
+})
