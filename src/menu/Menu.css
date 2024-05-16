@@ -1,9 +1,9 @@
 main {
   text-align: center;
-  padding: 1em;
+  padding: 0.25rem 0.75rem;
 }
 
-.heading {
+.centered {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,9 +17,14 @@ h2 {
   font-weight: 300;
 }
 
+svg {
+  fill: white;
+  width: 16px;
+}
+
 a:link,
 a:visited {
-  color: #ffffff;
+  color: white;
   outline: 0px solid transparent;
 }
 
@@ -48,21 +53,17 @@ input:focus {
 button {
   margin-left: 0.5rem;
   cursor: pointer;
-  padding: 4px 9px;
-  font-size: 20px;
-  line-height: 22px;
-  font-weight: 600;
+  width: 32px;
+  height: 32px;
   vertical-align: middle;
   background-color: #0d1116;
   border: 1px solid #30363d;
-  color: #4393f8;
   border-radius: 6px;
   outline: none;
   transition: 0.2s cubic-bezier(0.3, 0, 0.5, 1);
 }
 
 button:hover {
-  color: #ffffff;
   background-color: #4393f8;
   border-color: #4393f8;
   box-shadow: rgba(3, 102, 214, 0.3) 0px 0px 0px 3px;
@@ -70,13 +71,13 @@ button:hover {
 
 @media (prefers-color-scheme: light) {
   input {
-    color: #000000;
-    background-color: #ffffff;
+    color: black;
+    background-color: white;
     border-color: #d0d7de;
   }
 
   button {
-    background-color: #ffffff;
+    background-color: white;
     border-color: #d0d7de;
   }
 }
