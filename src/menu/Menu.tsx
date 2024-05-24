@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'preact/hooks'
 import './Menu.css'
-import { h } from 'preact'
 
 const DEFAULT_IGNORED_FILES = ['md', 'json', 'yml', 'lock']
 

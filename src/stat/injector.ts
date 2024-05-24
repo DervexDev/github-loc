@@ -33,9 +33,14 @@ export function injectStat(root: Element, stat: JSX.Element) {
 
   render(stat, div)
 
-  return div.firstElementChild?.lastElementChild!
+  return div
 }
 
 export function updateStat(stat: Element, value: number) {
-  stat.textContent = value.toLocaleString()
+  stat.firstElementChild!.lastElementChild!.textContent = value.toLocaleString()
+}
+
+export function updateLink(stat: Element, filter: string) {
+  const link = stat.firstElementChild!.getAttribute('href')!
+  stat.firstElementChild!.setAttribute('href', link + filter)
 }
