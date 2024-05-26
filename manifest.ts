@@ -9,15 +9,15 @@ export default defineManifest({
   version: packageData.version,
   manifest_version: 3,
   icons: {
-    16: 'logo-16.png',
-    32: 'logo-32.png',
-    48: 'logo-48.png',
-    128: 'logo-128.png',
+    16: 'img/logo-16.png',
+    32: 'img/logo-32.png',
+    48: 'img/logo-48.png',
+    128: 'img/logo-128.png',
   },
   options_page: 'src/menu/index.html',
   action: {
     default_popup: 'src/menu/index.html',
-    default_icon: 'logo-48.png',
+    default_icon: 'img/logo-48.png',
   },
   content_scripts: [
     {
@@ -30,7 +30,7 @@ export default defineManifest({
   },
   web_accessible_resources: [
     {
-      resources: ['logo-16.png', 'logo-32.png', 'logo-48.png', 'logo-128.png'],
+      resources: ['img/logo-16.png', 'img/logo-32.png', 'img/logo-48.png', 'img/logo-128.png'],
       matches: [],
     },
   ],
