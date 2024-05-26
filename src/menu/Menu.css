@@ -25,13 +25,11 @@ svg {
 a:link,
 a:visited {
   color: white;
-  outline: 0px solid transparent;
 }
 
 a:hover,
 a:active {
   color: #4393f8;
-  outline: 0px solid transparent;
 }
 
 input {
@@ -70,6 +68,10 @@ button:hover {
 }
 
 @media (prefers-color-scheme: light) {
+  a:visited {
+    color: black;
+  }
+
   input {
     color: black;
     background-color: white;

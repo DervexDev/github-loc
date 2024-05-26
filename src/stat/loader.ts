@@ -1,4 +1,4 @@
-interface LocData {
+export interface LocData {
   loc: number
   locByLangs: { [lang: string]: number }
 }
@@ -15,7 +15,7 @@ export function loadLoc(org: string, repo: string): Promise<number> {
   })
 }
 
-export async function fetchLoc(org: string, repo: string): Promise<number> {
+export async function fetchLoc(org: string, repo: string): Promise<[number, LocData]> {
   const headers: { Authorization?: string } = {}
   const accessToken = await chrome.storage.sync.get('accessToken')
 
@@ -23,7 +23,7 @@ export async function fetchLoc(org: string, repo: string): Promise<number> {
     headers.Authorization = `Bearer ${accessToken.accessToken}`
   }
 
-  const data: LocData = await fetch(`https://ghloc.ifels.dev/${org}/${repo}`, { headers })
+  let data: LocData = await fetch(`https://ghloc.ifels.dev/${org}/${repo}`, { headers })
     .then((res) => res.json())
     .then((data) => {
       if (typeof data !== 'object') {
@@ -40,7 +40,9 @@ export async function fetchLoc(org: string, repo: string): Promise<number> {
     for (let [lang, loc] of Object.entries(data.locByLangs)) {
       for (const ignored of ignoredFiles.ignoredFiles) {
         if (lang.endsWith(ignored.toLowerCase())) {
+          delete data.locByLangs[lang]
           loc = 0
+
           break
         }
       }
@@ -52,5 +54,5 @@ export async function fetchLoc(org: string, repo: string): Promise<number> {
   }
 
   chrome.storage.local.set({ [org + '/' + repo]: totalLoc })
-  return totalLoc
+  return [totalLoc, data]
 }

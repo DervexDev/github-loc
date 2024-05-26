@@ -1,10 +1,10 @@
-import { locateRoot, injectStat, updateStat, updateLink } from './injector'
+import { locateRoot, injectStat, updateStat, updateLink, updateFallbackLink } from './injector'
 import { fetchLoc, loadLoc } from './loader'
 import { getTarget, getFilter } from './util'
 import Stat from './Stat'
 
 function main() {
-  locateRoot().then((root) => {
+  locateRoot().then(([root, isPublic]) => {
     const [org, repo] = getTarget()
 
     const statJSX = Stat({
@@ -22,17 +22,24 @@ function main() {
     })
 
     fetchLoc(org, repo)
-      .then((loc) => {
+      .then(([totalLoc, locData]) => {
         fetched = true
-        updateStat(stat, loc)
+
+        updateStat(stat, totalLoc)
+
+        if (!isPublic) {
+          updateFallbackLink(stat, locData, totalLoc, org, repo)
+        }
       })
       .catch((err) => {
         console.log('Failed to fetch LOC:', err)
       })
 
-    getFilter().then((filter) => {
-      updateLink(stat, filter)
-    })
+    if (isPublic) {
+      getFilter().then((filter) => {
+        updateLink(stat, filter)
+      })
+    }
   })
 }
 
