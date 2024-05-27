@@ -5,23 +5,24 @@ import Stat from './Stat'
 
 function main() {
   locateRoot().then(([root, isPublic]) => {
-    const [org, repo] = getTarget()
+    const [org, repo, branch] = getTarget()
 
     const statJSX = Stat({
       org,
       repo,
+      branch,
     })
 
     const stat = injectStat(root, statJSX)
     let fetched = false
 
-    loadLoc(org, repo).then((loc) => {
+    loadLoc(org, repo, branch).then((loc) => {
       if (!fetched) {
         updateStat(stat, loc)
       }
     })
 
-    fetchLoc(org, repo)
+    fetchLoc(org, repo, branch)
       .then(([totalLoc, locData]) => {
         fetched = true
 

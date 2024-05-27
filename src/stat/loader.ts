@@ -3,9 +3,13 @@ export interface LocData {
   locByLangs: { [lang: string]: number }
 }
 
-export function loadLoc(org: string, repo: string): Promise<number> {
+function makeKey(org: string, repo: string, branch: string) {
+  return org + '/' + repo + '/' + branch
+}
+
+export function loadLoc(org: string, repo: string, branch: string): Promise<number> {
   return new Promise((resolve) => {
-    const key = org + '/' + repo
+    const key = makeKey(org, repo, branch)
 
     chrome.storage.local.get(key, (result) => {
       if (typeof result[key] === 'number') {
@@ -15,15 +19,21 @@ export function loadLoc(org: string, repo: string): Promise<number> {
   })
 }
 
-export async function fetchLoc(org: string, repo: string): Promise<[number, LocData]> {
-  const headers: { Authorization?: string } = {}
+export async function fetchLoc(
+  org: string,
+  repo: string,
+  branch: string,
+): Promise<[number, LocData]> {
   const accessToken = await chrome.storage.sync.get('accessToken')
+  const headers = new Headers()
 
-  if (typeof accessToken.accessToken === 'string') {
-    headers.Authorization = `Bearer ${accessToken.accessToken}`
+  if (typeof accessToken.accessToken === 'string' && accessToken.accessToken.length > 0) {
+    headers.append('Authorization', `Bearer ${accessToken.accessToken}`)
   }
 
-  let data: LocData = await fetch(`https://ghloc.ifels.dev/${org}/${repo}`, { headers })
+  let data: LocData = await fetch(`https://ghloc-api.vercel.app/${org}/${repo}/${branch}`, {
+    headers: headers,
+  })
     .then((res) => res.json())
     .then((data) => {
       if (typeof data !== 'object') {
@@ -53,6 +63,6 @@ export async function fetchLoc(org: string, repo: string): Promise<[number, LocD
     totalLoc = data.loc
   }
 
-  chrome.storage.local.set({ [org + '/' + repo]: totalLoc })
+  chrome.storage.local.set({ [makeKey(org, repo, branch)]: totalLoc })
   return [totalLoc, data]
 }

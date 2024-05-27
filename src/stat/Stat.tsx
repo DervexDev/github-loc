@@ -1,11 +1,12 @@
 interface Props {
   org: string
   repo: string
+  branch: string
 }
 
-export default function Stat({ org, repo }: Props) {
+export default function Stat({ org, repo, branch }: Props) {
   return (
-    <a className="Link Link--muted" href={`https://ghloc.vercel.app/${org}/${repo}`}>
+    <a className="Link Link--muted" href={`https://ghloc.vercel.app/${org}/${repo}/${branch}`}>
       <svg
         className="octicon octicon-repo-forked mr-2"
         viewBox="0 0 16 16"

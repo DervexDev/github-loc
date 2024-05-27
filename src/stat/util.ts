@@ -2,7 +2,19 @@ import { LocData } from './loader'
 import Fallback from './fallback.html?raw'
 
 export function getTarget() {
-  return window.location.pathname.split('/').slice(1, 3)
+  const orgRepo = window.location.pathname.split('/').slice(1, 3)
+
+  let branch = document.evaluate(
+    '//*[@id="branch-picker-repos-header-ref-selector"]/span/span[1]/div/div[2]/span',
+    document,
+    null,
+    XPathResult.FIRST_ORDERED_NODE_TYPE,
+    null,
+  ).singleNodeValue?.textContent
+
+  branch = branch?.substring(1)
+
+  return [orgRepo[0], orgRepo[1], branch || 'main']
 }
 
 export function getFilter(): Promise<string> {
