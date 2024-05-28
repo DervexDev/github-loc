@@ -1,25 +1,30 @@
 import { useState, useEffect } from 'preact/hooks'
-import { ShowIcon, HideIcon, LinkIcon, SaveIcon } from './Icons'
+import { ShowIcon, HideIcon, LinkIcon, SaveIcon, OkIcon, BadIcon } from './Icons'
+import { DEFAULT_IGNORED_FILES } from '../defaults'
 import './Menu.css'
 
-const DEFAULT_IGNORED_FILES = ['md', 'json', 'yml', 'lock']
+const IGNORED_FILES_REGEX = /^(\w+ ?, ?)*\w*$/
 
 export const Menu = () => {
   const [savedIgnoredFiles, setSavedIgnoredFiles] = useState(DEFAULT_IGNORED_FILES.join(', '))
   const [ignoredFiles, setIgnoredFiles] = useState(DEFAULT_IGNORED_FILES.join(', '))
+  const [isClickable, setIsClickable] = useState(false)
 
   const [savedAccessToken, setSavedAccessToken] = useState('')
   const [accessToken, setAccessToken] = useState('')
-
   const [hidden, setHidden] = useState(false)
 
   function ignoredFilesAction() {
-    chrome.storage.sync.set({
-      ignoredFiles: ignoredFiles
-        .split(',')
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0),
-    })
+    if (IGNORED_FILES_REGEX.test(ignoredFiles)) {
+      chrome.storage.sync.set({
+        ignoredFiles: ignoredFiles
+          .split(',')
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0),
+      })
+
+      setSavedIgnoredFiles(ignoredFiles)
+    }
   }
 
   function accessTokenAction() {
@@ -55,7 +60,22 @@ export const Menu = () => {
     }
   }
 
-  function getIcon() {
+  function getIgnoredFilesIcon() {
+    if (IGNORED_FILES_REGEX.test(ignoredFiles)) {
+      if (ignoredFiles.replace(/[, ]/g, '') === savedIgnoredFiles.replace(/[, ]/g, '')) {
+        setIsClickable(false)
+        return OkIcon()
+      } else {
+        setIsClickable(true)
+        return SaveIcon()
+      }
+    } else {
+      setIsClickable(false)
+      return BadIcon()
+    }
+  }
+
+  function getAccessTokenIcon() {
     if (accessToken.length === 0) {
       if (savedAccessToken.length > 0) {
         return SaveIcon()
@@ -107,13 +127,15 @@ export const Menu = () => {
         </p>
         <input
           value={ignoredFiles}
-          placeholder={DEFAULT_IGNORED_FILES.join(', ')}
+          placeholder={DEFAULT_IGNORED_FILES.slice(0, 4).join(', ') + '...'}
           onInput={(event) => setIgnoredFiles((event.target as HTMLInputElement)?.value)}
         />
-        <button onClick={ignoredFilesAction}>
-          <div className="centered">
-            <SaveIcon />
-          </div>
+        <button
+          onClick={ignoredFilesAction}
+          disabled={!isClickable}
+          class={isClickable ? '' : 'noHover'}
+        >
+          <div className="centered">{getIgnoredFilesIcon()}</div>
         </button>
       </div>
 
@@ -130,7 +152,7 @@ export const Menu = () => {
             onInput={(event) => setAccessToken((event.target as HTMLInputElement)?.value)}
           />
           <button onClick={accessTokenAction}>
-            <div className="centered">{getIcon()}</div>
+            <div className="centered">{getAccessTokenIcon()}</div>
           </button>
         </div>
       </div>
