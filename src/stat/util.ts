@@ -21,7 +21,7 @@ export function getFilter(): Promise<string> {
   return new Promise((resolve) => {
     chrome.storage.sync.get('ignoredFiles').then((ignoredFiles) => {
       if (Array.isArray(ignoredFiles.ignoredFiles)) {
-        let filter = '?filter='
+        let filter = '&filter='
 
         ignoredFiles.ignoredFiles.forEach((ignored) => {
           filter += '%21' + ignored + '%24%2C' // !md$,
@@ -48,8 +48,6 @@ export function openFallbackPage(data: LocData, totalLoc: number, org: string, r
     .replaceAll('$repo', repo)
     .replace('$loc', totalLoc.toLocaleString())
     .replace('$locTable', locTable)
-
-  console.log(fallback)
 
   document?.write(fallback)
   document?.close()

@@ -36,14 +36,27 @@ export async function fetchLoc(
   let url = `https://ghloc-api.vercel.app/${org}/${repo}/${branch}`
 
   const accessToken = await chrome.storage.sync.get('accessToken')
+  const ignoredFiles = await chrome.storage.sync.get('ignoredFiles')
+
   const headers = new Headers({
     'Ghloc-Authorization': import.meta.env.VITE_AUTH_TOKEN,
   })
 
+  if (Array.isArray(ignoredFiles.ignoredFiles) && ignoredFiles.ignoredFiles.length > 0) {
+    url += '?match='
+
+    for (const ignored of ignoredFiles.ignoredFiles) {
+      url += '!' + ignored + '$,'
+    }
+
+    url = url.substring(0, url.length - 1)
+  }
+
   if (typeof accessToken.accessToken === 'string' && accessToken.accessToken.length > 0) {
     headers.append('Authorization', `Bearer ${accessToken.accessToken}`)
 
-    url += '?salt=' + (await sha1(accessToken.accessToken))
+    url += url.includes('?match') ? '&' : '?'
+    url += 'salt=' + (await sha1(accessToken.accessToken))
   }
 
   let data: LocData = await fetch(url, {
@@ -58,26 +71,6 @@ export async function fetchLoc(
       return data
     })
 
-  const ignoredFiles = await chrome.storage.sync.get('ignoredFiles')
-  let totalLoc = 0
-
-  if (Array.isArray(ignoredFiles.ignoredFiles)) {
-    for (let [lang, loc] of Object.entries(data.locByLangs)) {
-      for (const ignored of ignoredFiles.ignoredFiles) {
-        if (lang.endsWith(ignored.toLowerCase())) {
-          delete data.locByLangs[lang]
-          loc = 0
-
-          break
-        }
-      }
-
-      totalLoc += loc
-    }
-  } else {
-    totalLoc = data.loc
-  }
-
-  chrome.storage.local.set({ [makeKey(org, repo, branch)]: totalLoc })
-  return [totalLoc, data]
+  chrome.storage.local.set({ [makeKey(org, repo, branch)]: data.loc })
+  return [data.loc, data]
 }
