@@ -3,7 +3,7 @@
   "displayName": "GitHub LOC",
   "version": "1.0.0",
   "author": "Dervex",
-  "description": "A Chrome extension that shows lines of code of a GitHub repository",
+  "description": "See Lines Of Code of any GitHub repository in simple yet elegant way",
   "type": "module",
   "license": "Apache-2.0",
   "keywords": [
