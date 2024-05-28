@@ -1,6 +1,5 @@
 import { JSX, render } from 'preact'
 import { LocData } from './loader'
-import Fallback from './fallback.html?raw'
 import { openFallbackPage } from './util'
 
 function isInjected(root: Element) {
