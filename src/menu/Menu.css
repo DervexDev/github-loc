@@ -86,4 +86,8 @@ button:hover {
     background-color: white;
     border-color: #d0d7de;
   }
+
+  svg {
+    fill: black;
+  }
 }
