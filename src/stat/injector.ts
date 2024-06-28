@@ -1,15 +1,15 @@
-import { JSX, render } from 'preact'
-import { LocData } from './loader'
-import { openFallbackPage } from './util'
+import { JSX, render } from "preact"
+import { LocData } from "./loader"
+import { openFallbackPage } from "./util"
 
 function isInjected(root: Element) {
-  return root.querySelector('#github-loc') !== null
+  return root.querySelector("#github-loc") !== null
 }
 
 export function locateRoot(): Promise<[Element, boolean]> {
   return new Promise((resolve) => {
     const root = document.evaluate(
-      '//h2[text()="About"]',
+      '//h2[text()="About" and not(@class="heading-element")]',
       document,
       null,
       XPathResult.FIRST_ORDERED_NODE_TYPE,
@@ -25,7 +25,7 @@ export function locateRoot(): Promise<[Element, boolean]> {
     ).singleNodeValue
 
     if (root && !isInjected(root)) {
-      const isPublic = repoVisibility?.textContent !== 'Private'
+      const isPublic = repoVisibility?.textContent !== "Private"
 
       resolve([root, isPublic])
     }
@@ -33,11 +33,11 @@ export function locateRoot(): Promise<[Element, boolean]> {
 }
 
 export function injectStat(root: Element, stat: JSX.Element) {
-  const div = document.createElement('div')
-  div.className = 'mt-2'
-  div.id = 'github-loc'
+  const div = document.createElement("div")
+  div.className = "mt-2"
+  div.id = "github-loc"
 
-  if (root.lastElementChild?.firstElementChild?.textContent?.includes('Report')) {
+  if (root.lastElementChild?.firstElementChild?.textContent?.includes("Report")) {
     root.insertBefore(div, root.lastElementChild)
   } else {
     root.appendChild(div)
@@ -53,8 +53,8 @@ export function updateStat(stat: Element, value: number) {
 }
 
 export function updateLink(stat: Element, filter: string) {
-  const link = stat.firstElementChild!.getAttribute('href')!
-  stat.firstElementChild!.setAttribute('href', link + filter)
+  const link = stat.firstElementChild!.getAttribute("href")!
+  stat.firstElementChild!.setAttribute("href", link + filter)
 }
 
 export function updateFallbackLink(
@@ -66,7 +66,7 @@ export function updateFallbackLink(
 ) {
   stat = stat.firstElementChild! as HTMLElement
 
-  stat.removeAttribute('href')
+  stat.removeAttribute("href")
 
   stat.onclick = () => {
     openFallbackPage(data, totalLoc, org, repo)

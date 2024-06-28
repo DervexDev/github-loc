@@ -1,24 +1,24 @@
-import { useState, useEffect } from 'preact/hooks'
-import { ShowIcon, HideIcon, LinkIcon, SaveIcon, OkIcon, BadIcon } from './Icons'
-import { DEFAULT_IGNORED_FILES } from '../defaults'
-import './Menu.css'
+import { useState, useEffect } from "preact/hooks"
+import { ShowIcon, HideIcon, LinkIcon, SaveIcon, OkIcon, BadIcon } from "./Icons"
+import { DEFAULT_IGNORED_FILES } from "../defaults"
+import "./Menu.css"
 
 const IGNORED_FILES_REGEX = /^(\w+ ?, ?)*\w*$/
 
 export const Menu = () => {
-  const [savedIgnoredFiles, setSavedIgnoredFiles] = useState(DEFAULT_IGNORED_FILES.join(', '))
-  const [ignoredFiles, setIgnoredFiles] = useState(DEFAULT_IGNORED_FILES.join(', '))
+  const [savedIgnoredFiles, setSavedIgnoredFiles] = useState(DEFAULT_IGNORED_FILES.join(", "))
+  const [ignoredFiles, setIgnoredFiles] = useState(DEFAULT_IGNORED_FILES.join(", "))
   const [isClickable, setIsClickable] = useState(false)
 
-  const [savedAccessToken, setSavedAccessToken] = useState('')
-  const [accessToken, setAccessToken] = useState('')
+  const [savedAccessToken, setSavedAccessToken] = useState("")
+  const [accessToken, setAccessToken] = useState("")
   const [hidden, setHidden] = useState(false)
 
   function ignoredFilesAction() {
     if (IGNORED_FILES_REGEX.test(ignoredFiles)) {
       chrome.storage.sync.set({
         ignoredFiles: ignoredFiles
-          .split(',')
+          .split(",")
           .map((s) => s.trim())
           .filter((s) => s.length > 0),
       })
@@ -30,13 +30,13 @@ export const Menu = () => {
   function accessTokenAction() {
     if (accessToken.length === 0) {
       if (savedAccessToken.length > 0) {
-        chrome.storage.sync.remove('accessToken')
-        setSavedAccessToken('')
+        chrome.storage.sync.remove("accessToken")
+        setSavedAccessToken("")
       } else {
-        window.open('https://github.com/settings/tokens/new?scopes=repo&description=GitHub%20LOC')
+        window.open("https://github.com/settings/tokens/new?scopes=repo&description=GitHub%20LOC")
       }
     } else if (accessToken !== savedAccessToken) {
-      fetch('https://api.github.com/user/issues', {
+      fetch("https://api.github.com/user/issues", {
         headers: { Authorization: `Bearer ${accessToken}` },
       })
         .then((res) => {
@@ -45,9 +45,9 @@ export const Menu = () => {
             setSavedAccessToken(accessToken)
             setHidden(true)
           } else {
-            chrome.storage.sync.remove('accessToken')
-            setSavedAccessToken('')
-            setAccessToken('')
+            chrome.storage.sync.remove("accessToken")
+            setSavedAccessToken("")
+            setAccessToken("")
           }
         })
         .catch(() => {
@@ -62,7 +62,7 @@ export const Menu = () => {
 
   function getIgnoredFilesIcon() {
     if (IGNORED_FILES_REGEX.test(ignoredFiles)) {
-      if (ignoredFiles.replace(/[, ]/g, '') === savedIgnoredFiles.replace(/[, ]/g, '')) {
+      if (ignoredFiles.replace(/[, ]/g, "") === savedIgnoredFiles.replace(/[, ]/g, "")) {
         setIsClickable(false)
         return OkIcon()
       } else {
@@ -92,15 +92,15 @@ export const Menu = () => {
   }
 
   useEffect(() => {
-    chrome.storage.sync.get('ignoredFiles', (result) => {
+    chrome.storage.sync.get("ignoredFiles", (result) => {
       if (Array.isArray(result.ignoredFiles)) {
-        setSavedIgnoredFiles(result.ignoredFiles.join(', '))
-        setIgnoredFiles(result.ignoredFiles.join(', '))
+        setSavedIgnoredFiles(result.ignoredFiles.join(", "))
+        setIgnoredFiles(result.ignoredFiles.join(", "))
       }
     })
 
-    chrome.storage.sync.get('accessToken', (result) => {
-      if (typeof result.accessToken === 'string' && result.accessToken.length > 0) {
+    chrome.storage.sync.get("accessToken", (result) => {
+      if (typeof result.accessToken === "string" && result.accessToken.length > 0) {
         setSavedAccessToken(result.accessToken)
         setAccessToken(result.accessToken)
         setHidden(true)
@@ -127,13 +127,13 @@ export const Menu = () => {
         </p>
         <input
           value={ignoredFiles}
-          placeholder={DEFAULT_IGNORED_FILES.slice(0, 4).join(', ') + '...'}
+          placeholder={DEFAULT_IGNORED_FILES.slice(0, 4).join(", ") + "..."}
           onInput={(event) => setIgnoredFiles((event.target as HTMLInputElement)?.value)}
         />
         <button
           onClick={ignoredFilesAction}
           disabled={!isClickable}
-          class={isClickable ? '' : 'noHover'}
+          class={isClickable ? "" : "noHover"}
         >
           <div className="centered">{getIgnoredFilesIcon()}</div>
         </button>
@@ -147,7 +147,7 @@ export const Menu = () => {
         <div>
           <input
             readOnly={hidden}
-            value={hidden ? '•'.repeat(accessToken.length) : accessToken}
+            value={hidden ? "•".repeat(accessToken.length) : accessToken}
             placeholder="ghp..."
             onInput={(event) => setAccessToken((event.target as HTMLInputElement)?.value)}
           />
@@ -158,7 +158,7 @@ export const Menu = () => {
       </div>
 
       <p>
-        Made with 💙 by{' '}
+        Made with 💙 by{" "}
         <a href="https://dervex.dev/" target="_blank">
           Dervex
         </a>

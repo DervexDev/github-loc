@@ -1,7 +1,7 @@
-import { locateRoot, injectStat, updateStat, updateLink, updateFallbackLink } from './injector'
-import { fetchLoc, loadLoc } from './loader'
-import { getTarget, getFilter } from './util'
-import Stat from './Stat'
+import { locateRoot, injectStat, updateStat, updateLink, updateFallbackLink } from "./injector"
+import { fetchLoc, loadLoc } from "./loader"
+import { getTarget, getFilter } from "./util"
+import Stat from "./Stat"
 
 function main() {
   locateRoot().then(([root, isPublic]) => {
@@ -33,7 +33,7 @@ function main() {
         }
       })
       .catch((err) => {
-        console.log('Failed to fetch LOC:', err)
+        console.log("Failed to fetch LOC:", err)
       })
 
     if (isPublic) {
@@ -45,7 +45,7 @@ function main() {
 }
 
 chrome.runtime.onMessage.addListener((message) => {
-  if (message === 'github-loc:update') {
+  if (message === "github-loc:update") {
     main()
   }
 })
