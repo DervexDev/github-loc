@@ -1,0 +1,130 @@
+name: Release
+
+on:
+  push:
+    tags: ["*"]
+
+jobs:
+  bump:
+    name: Bump Version
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Update Changelog
+        uses: thomaseizinger/keep-a-changelog-new-release@v3
+        with:
+          tag: ${{ github.ref_name }}
+
+      - name: Bump package version
+        id: version-bump
+        uses: DervexDev/file-version-bumper@v1
+        with:
+          path: ./package.json
+
+      - name: Commit and Push
+        uses: EndBug/add-and-commit@v9
+        if: ${{ github.ref_name != steps.version-bump.outputs.old_version }}
+        with:
+          message: Bump Version to ${{ github.ref_name }}
+          default_author: github_actions
+
+      - name: Update tag
+        if: ${{ github.ref_name != steps.version-bump.outputs.old_version }}
+        run: |
+          git tag -fa ${{ github.ref_name }} -m "Release ${{ github.ref_name }}"
+          git push -f --tags
+
+  draft-release:
+    name: Draft Release
+    runs-on: ubuntu-latest
+    needs: bump
+
+    outputs:
+      upload_url: ${{ steps.create-release.outputs.upload_url }}
+      release_id: ${{ steps.create-release.outputs.id }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Read Changelog
+        id: read-changes
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          version: ${{ github.ref_name }}
+
+      - name: Get previus Tag
+        id: previus-tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+
+      - name: Create Release
+        id: create-release
+        uses: shogo82148/actions-create-release@v1
+        with:
+          release_name: ${{ github.ref_name }}
+          body: ${{ steps.read-changes.outputs.changes }}
+          prerelease: ${{ contains(github.ref_name, 'pre') }}
+          notes_start_tag: ${{ steps.previus-tag.outputs.tag }}
+          generate_release_notes: true
+          commitish: main
+          draft: true
+
+  build:
+    name: Build and Upload
+    runs-on: ubuntu-latest
+    needs: draft-release
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run zip
+
+      - name: Upload to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-loc-${{ github.ref_name }}.zip
+          path: github-loc.zip
+
+      - name: Upload to Release
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ needs.draft-release.outputs.upload_url }}
+          asset_name: github-loc-${{ github.ref_name }}.zip
+          asset_path: github-loc.zip
+
+      - name: Upload to Chrome Web Store
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          file-path: github-loc.zip
+          extension-id: clfbbldiigihjkignlkngblahkpalmhh
+          client-id: ${{ secrets.CLIENT_ID }}
+          client-secret: ${{ secrets.CLIENT_SECRET }}
+          refresh-token: ${{ secrets.REFRESH_TOKEN }}
+
+  publish-release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    needs: [build, draft-release]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Publish to GitHub
+        uses: eregon/publish-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ needs.draft-release.outputs.release_id }}
