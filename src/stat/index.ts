@@ -1,7 +1,9 @@
 import { locateRoot, injectStat, updateStat, updateLink, updateFallbackLink } from "./injector"
 import { fetchLoc, loadLoc } from "./loader"
-import { getTarget, getFilter } from "./util"
+import { getTarget, getFilter, now } from "./util"
 import Stat from "./Stat"
+
+const FETCH_RATE_LIMIT = 10 * 60
 
 function main() {
   locateRoot().then(([root, isPublic]) => {
@@ -14,33 +16,38 @@ function main() {
     })
 
     const stat = injectStat(root, statJSX)
-    let fetched = false
 
-    loadLoc(org, repo, branch).then((loc) => {
-      if (!fetched) {
-        updateStat(stat, loc)
+    loadLoc(org, repo, branch).then((locData) => {
+      if (isPublic) {
+        getFilter().then((filter) => {
+          updateLink(stat, filter)
+        })
       }
-    })
 
-    fetchLoc(org, repo, branch)
-      .then(([totalLoc, locData]) => {
-        fetched = true
+      if (locData) {
+        updateStat(stat, locData.loc)
 
-        updateStat(stat, totalLoc)
+        if (now() - locData.lastFetched < FETCH_RATE_LIMIT) {
+          if (!isPublic) {
+            updateFallbackLink(stat, locData, locData.loc, org, repo)
+          }
 
-        if (!isPublic) {
-          updateFallbackLink(stat, locData, totalLoc, org, repo)
+          return
         }
-      })
-      .catch((err) => {
-        console.log("Failed to fetch LOC:", err)
-      })
+      }
 
-    if (isPublic) {
-      getFilter().then((filter) => {
-        updateLink(stat, filter)
-      })
-    }
+      fetchLoc(org, repo, branch)
+        .then((locData) => {
+          updateStat(stat, locData.loc)
+
+          if (!isPublic) {
+            updateFallbackLink(stat, locData, locData.loc, org, repo)
+          }
+        })
+        .catch((err) => {
+          console.log("Failed to fetch LOC:", err)
+        })
+    })
   })
 }
 

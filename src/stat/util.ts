@@ -1,6 +1,10 @@
 import { LocData } from "./loader"
 import Fallback from "./fallback.html?raw"
 
+export function now(): number {
+  return Math.floor(Date.now() / 1000)
+}
+
 export function getTarget() {
   const orgRepo = window.location.pathname.split("/").slice(1, 3)
 

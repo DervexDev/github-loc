@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - LOC property no longer renders in repo READMEs containing "About" heading
 
+### Changed
+
+- LOC refresh is now rate limited to once every 10 minutes per repo
+
 ## [1.0.1] - 2024-05-29
 
 ### Fixed

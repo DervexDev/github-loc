@@ -1,6 +1,9 @@
+import { now } from "./util"
+
 export interface LocData {
   loc: number
   locByLangs: { [lang: string]: number }
+  lastFetched: number
 }
 
 function makeKey(org: string, repo: string, branch: string) {
@@ -16,23 +19,21 @@ async function sha1(str: string) {
     .join("")
 }
 
-export function loadLoc(org: string, repo: string, branch: string): Promise<number> {
+export function loadLoc(org: string, repo: string, branch: string): Promise<LocData | null> {
   return new Promise((resolve) => {
     const key = makeKey(org, repo, branch)
 
     chrome.storage.local.get(key, (result) => {
-      if (typeof result[key] === "number") {
+      if (typeof result[key] === "object") {
         resolve(result[key])
+      } else {
+        resolve(null)
       }
     })
   })
 }
 
-export async function fetchLoc(
-  org: string,
-  repo: string,
-  branch: string,
-): Promise<[number, LocData]> {
+export async function fetchLoc(org: string, repo: string, branch: string): Promise<LocData> {
   let url = `https://ghloc-api.vercel.app/${org}/${repo}/${branch}`
 
   const accessToken = await chrome.storage.sync.get("accessToken")
@@ -71,6 +72,8 @@ export async function fetchLoc(
       return data
     })
 
-  chrome.storage.local.set({ [makeKey(org, repo, branch)]: data.loc })
-  return [data.loc, data]
+  data.lastFetched = now()
+  chrome.storage.local.set({ [makeKey(org, repo, branch)]: data })
+
+  return data
 }
