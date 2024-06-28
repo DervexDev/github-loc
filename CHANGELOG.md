@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.0.3] - 2024-06-28
+
 ### Fixed
 
 - Extension no longer blocks when updating from an older version (hotfix)
@@ -32,7 +34,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Initial release
 
-[unreleased]: https://github.com/DervexDev/github-loc/compare/1.0.2...HEAD
+[unreleased]: https://github.com/DervexDev/github-loc/compare/1.0.3...HEAD
+[1.0.3]: https://github.com/DervexDev/github-loc/compare/1.0.2...1.0.3
 [1.0.2]: https://github.com/DervexDev/github-loc/compare/1.0.1...1.0.2
 [1.0.1]: https://github.com/DervexDev/github-loc/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/DervexDev/github-loc/compare/bcab85c8facf4b0100022bfd948cc8c3cdbf28c9...1.0.0
