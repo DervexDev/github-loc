@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- Fetching LOC of private repositories works again (hotfix)
+
 ## [1.0.3] - 2024-06-28
 
 ### Fixed
