@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- Extension no longer blocks when updating from an older version (hotfix)
+
 ## [1.0.2] - 2024-06-28
 
 ### Fixed

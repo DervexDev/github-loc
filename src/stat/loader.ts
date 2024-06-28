@@ -23,9 +23,16 @@ export function loadLoc(org: string, repo: string, branch: string): Promise<LocD
   return new Promise((resolve) => {
     const key = makeKey(org, repo, branch)
 
-    chrome.storage.local.get(key, (result) => {
-      if (typeof result[key] === "object") {
-        resolve(result[key])
+    chrome.storage.local.get(key, (locData) => {
+      locData = locData[key]
+
+      if (
+        typeof locData === "object" &&
+        typeof locData.loc === "number" &&
+        typeof locData.locByLangs === "object" &&
+        typeof locData.lastFetched === "number"
+      ) {
+        resolve(locData as LocData)
       } else {
         resolve(null)
       }
