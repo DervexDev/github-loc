@@ -28,7 +28,7 @@
     "preact": "^10.24.3"
   },
   "devDependencies": {
-    "@crxjs/vite-plugin": "^2.0.0-beta.25",
+    "@crxjs/vite-plugin": "^2.0.0-beta.26",
     "@preact/preset-vite": "^2.9.1",
     "@types/chrome": "^0.0.278",
     "gulp": "^4.0.2",
