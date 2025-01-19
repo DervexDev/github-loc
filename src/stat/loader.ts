@@ -76,6 +76,10 @@ export async function fetchLoc(org: string, repo: string, branch: string): Promi
         throw new Error("Invalid response: " + JSON.stringify(data))
       }
 
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
       return data
     })
 

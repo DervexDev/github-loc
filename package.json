@@ -31,7 +31,7 @@
     "@crxjs/vite-plugin": "^2.0.0-beta.30",
     "@preact/preset-vite": "^2.9.4",
     "@types/chrome": "^0.0.293",
-    "gulp": "^4.0.2",
+    "gulp": "^5.0.0",
     "gulp-zip": "^6.1.0",
     "prettier": "^3.4.2",
     "typescript": "^5.7.3",

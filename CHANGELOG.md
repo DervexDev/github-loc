@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Better error messages for LOC fetching
+
+### Fixed
+
+- Extension not working due to some CSP directives
+
 ## [1.0.4] - 2024-06-28
 
 ### Fixed
