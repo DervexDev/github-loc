@@ -6,6 +6,6 @@ const require = createRequire(import.meta.url)
 const manifest = require("../build/manifest.json")
 
 gulp
-  .src("build/**")
+  .src(["build/**", "!build/*.png"], { encoding: false })
   .pipe(zip(manifest.name.replaceAll(" ", "-").toLowerCase() + ".zip"))
   .pipe(gulp.dest("./"))

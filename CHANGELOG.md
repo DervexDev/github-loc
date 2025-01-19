@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- Image encoding in packaged extension
+
 ## [1.0.5] - 2025-01-19
 
 ### Added
