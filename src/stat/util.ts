@@ -41,11 +41,12 @@ export function getFilter(): Promise<string> {
 }
 
 export function openFallbackPage(data: LocData, org: string, repo: string) {
+  const locByLangs = Object.entries(data.locByLangs).sort((a, b) => b[1] - a[1])
   const document = window.open()?.document
 
   let locTable = ""
 
-  for (const [lang, loc] of Object.entries(data.locByLangs)) {
+  for (const [lang, loc] of locByLangs) {
     const percent = ((loc / data.loc) * 100).toFixed(2)
     locTable += `<tr><td>${lang}</td><td>${loc.toLocaleString()}</td><td>${percent}%</td></tr>\n`
   }
