@@ -25,7 +25,7 @@
     "zip": "npm run build && node src/zip.js"
   },
   "dependencies": {
-    "preact": "^10.25.4"
+    "preact": "^10.28.0"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.2.1",
