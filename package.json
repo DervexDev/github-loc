@@ -1,7 +1,7 @@
 {
   "name": "github-loc",
   "displayName": "GitHub LOC",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "author": "Dervex",
   "description": "See Lines Of Code of any GitHub repository in simple yet elegant way",
   "type": "module",
