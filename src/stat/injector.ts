@@ -25,9 +25,7 @@ export function locateRoot(): Promise<[Element, boolean]> {
     ).singleNodeValue
 
     if (root && !isInjected(root)) {
-      const isPublic = repoVisibility?.textContent !== "Private"
-
-      resolve([root, isPublic])
+      resolve([root, repoVisibility?.textContent !== "Private"])
     }
   })
 }
@@ -57,18 +55,11 @@ export function updateLink(stat: Element, filter: string) {
   stat.firstElementChild!.setAttribute("href", link + filter)
 }
 
-export function updateFallbackLink(
-  stat: HTMLElement,
-  data: LocData,
-  totalLoc: number,
-  org: string,
-  repo: string,
-) {
+export function updateFallbackLink(stat: HTMLElement, data: LocData, org: string, repo: string) {
   stat = stat.firstElementChild! as HTMLElement
-
   stat.removeAttribute("href")
 
   stat.onclick = () => {
-    openFallbackPage(data, totalLoc, org, repo)
+    openFallbackPage(data, org, repo)
   }
 }

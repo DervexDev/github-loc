@@ -6,19 +6,22 @@ export function now(): number {
 }
 
 export function getTarget() {
-  const orgRepo = window.location.pathname.split("/").slice(1, 3)
+  const path = window.location.pathname.split("/")
+  let branch: string | undefined = path.slice(4).join("/")
 
-  let branch = document.evaluate(
-    '//*[@id="branch-picker-repos-header-ref-selector"]/span/span[1]/div/div[2]/span',
-    document,
-    null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null,
-  ).singleNodeValue?.textContent
+  if (!branch) {
+    branch = document
+      .evaluate(
+        '//*[@id="ref-picker-repos-header-ref-selector"]/span/span[1]/div/div[2]/span',
+        document,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null,
+      )
+      .singleNodeValue?.textContent?.trim()
+  }
 
-  branch = branch?.substring(1)
-
-  return [orgRepo[0], orgRepo[1], branch || "main"]
+  return [path[1], path[2], branch || "main"]
 }
 
 export function getFilter(): Promise<string> {
@@ -37,20 +40,19 @@ export function getFilter(): Promise<string> {
   })
 }
 
-export function openFallbackPage(data: LocData, totalLoc: number, org: string, repo: string) {
+export function openFallbackPage(data: LocData, org: string, repo: string) {
   const document = window.open()?.document
 
   let locTable = ""
 
   for (const [lang, loc] of Object.entries(data.locByLangs)) {
-    const percent = ((loc / totalLoc) * 100).toFixed(2)
-
+    const percent = ((loc / data.loc) * 100).toFixed(2)
     locTable += `<tr><td>${lang}</td><td>${loc.toLocaleString()}</td><td>${percent}%</td></tr>\n`
   }
 
   const fallback = Fallback.replaceAll("$org", org)
     .replaceAll("$repo", repo)
-    .replace("$loc", totalLoc.toLocaleString())
+    .replace("$loc", data.loc.toLocaleString())
     .replace("$locTable", locTable)
 
   document?.write(fallback)

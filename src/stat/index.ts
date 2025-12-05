@@ -29,7 +29,7 @@ function main() {
 
         if (now() - locData.lastFetched < FETCH_RATE_LIMIT) {
           if (!isPublic) {
-            updateFallbackLink(stat, locData, locData.loc, org, repo)
+            updateFallbackLink(stat, locData, org, repo)
           }
 
           return
@@ -41,7 +41,7 @@ function main() {
           updateStat(stat, locData.loc)
 
           if (!isPublic) {
-            updateFallbackLink(stat, locData, locData.loc, org, repo)
+            updateFallbackLink(stat, locData, org, repo)
           }
         })
         .catch((err) => {

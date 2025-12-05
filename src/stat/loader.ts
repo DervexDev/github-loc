@@ -23,8 +23,8 @@ export function loadLoc(org: string, repo: string, branch: string): Promise<LocD
   return new Promise((resolve) => {
     const key = makeKey(org, repo, branch)
 
-    chrome.storage.local.get(key, (locData) => {
-      locData = locData[key]
+    chrome.storage.local.get(key, (data) => {
+      const locData = data[key] as LocData
 
       if (
         typeof locData === "object" &&
@@ -67,9 +67,7 @@ export async function fetchLoc(org: string, repo: string, branch: string): Promi
     url += "salt=" + (await sha1(accessToken.accessToken))
   }
 
-  let data: LocData = await fetch(url, {
-    headers,
-  })
+  let data: LocData = await fetch(url, { headers })
     .then((res) => res.json())
     .then((data) => {
       if (typeof data !== "object") {
