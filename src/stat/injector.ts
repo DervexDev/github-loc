@@ -2,10 +2,6 @@ import { JSX, render } from "preact"
 import { LocData } from "./loader"
 import { openFallbackPage } from "./util"
 
-function isInjected(root: Element) {
-  return root.querySelector("#github-loc") !== null
-}
-
 function isPublicRepository() {
   const publicMeta = document.querySelector('meta[name="octolytics-dimension-repository_public"]')
   const publicValue = publicMeta?.getAttribute("content")
@@ -42,11 +38,6 @@ export function locateRoot(): Promise<[Element, boolean]> {
         return false
       }
 
-      if (isInjected(root)) {
-        observer?.disconnect()
-        return true
-      }
-
       observer?.disconnect()
       resolve([root, isPublicRepository()])
       return true
@@ -60,14 +51,18 @@ export function locateRoot(): Promise<[Element, boolean]> {
 }
 
 export function injectStat(root: Element, stat: JSX.Element) {
-  const div = document.createElement("div")
-  div.className = "mt-2"
-  div.id = "github-loc"
+  const existing = root.querySelector<HTMLElement>("#github-loc")
+  const div = existing ?? document.createElement("div")
 
-  if (root.lastElementChild?.firstElementChild?.textContent?.includes("Report")) {
-    root.insertBefore(div, root.lastElementChild)
-  } else {
-    root.appendChild(div)
+  if (!existing) {
+    div.className = "mt-2"
+    div.id = "github-loc"
+
+    if (root.lastElementChild?.firstElementChild?.textContent?.includes("Report")) {
+      root.insertBefore(div, root.lastElementChild)
+    } else {
+      root.appendChild(div)
+    }
   }
 
   render(stat, div)
