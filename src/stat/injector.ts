@@ -8,24 +8,42 @@ function isInjected(root: Element) {
 
 export function locateRoot(): Promise<[Element, boolean]> {
   return new Promise((resolve) => {
-    const root = document.evaluate(
-      '//h2[text()="About" and not(@class="heading-element")]',
-      document,
-      null,
-      XPathResult.FIRST_ORDERED_NODE_TYPE,
-      null,
-    ).singleNodeValue?.parentElement
+    let observer: MutationObserver | undefined
 
-    const repoVisibility = document.evaluate(
-      '//*[@id="repo-title-component"]/span[2]',
-      document,
-      null,
-      XPathResult.FIRST_ORDERED_NODE_TYPE,
-      null,
-    ).singleNodeValue
+    const tryLocate = () => {
+      const root = document.evaluate(
+        '//h2[normalize-space(.)="About" and not(@class="heading-element")]',
+        document,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null,
+      ).singleNodeValue?.parentElement
 
-    if (root && !isInjected(root)) {
+      if (!root) {
+        return false
+      }
+
+      if (isInjected(root)) {
+        observer?.disconnect()
+        return true
+      }
+
+      const repoVisibility = document.evaluate(
+        '//*[@id="repo-title-component"]/span[2]',
+        document,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null,
+      ).singleNodeValue
+
+      observer?.disconnect()
       resolve([root, repoVisibility?.textContent !== "Private"])
+      return true
+    }
+
+    if (!tryLocate()) {
+      observer = new MutationObserver(tryLocate)
+      observer.observe(document.documentElement, { childList: true, subtree: true })
     }
   })
 }
