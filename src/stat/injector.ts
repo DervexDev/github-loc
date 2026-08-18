@@ -6,6 +6,25 @@ function isInjected(root: Element) {
   return root.querySelector("#github-loc") !== null
 }
 
+function isPublicRepository() {
+  const publicMeta = document.querySelector('meta[name="octolytics-dimension-repository_public"]')
+  const publicValue = publicMeta?.getAttribute("content")
+
+  if (publicValue !== null) {
+    return publicValue === "true"
+  }
+
+  const repoVisibility = document.evaluate(
+    '//*[@id="repo-title-component"]/span[2]',
+    document,
+    null,
+    XPathResult.FIRST_ORDERED_NODE_TYPE,
+    null,
+  ).singleNodeValue
+
+  return repoVisibility?.textContent !== "Private"
+}
+
 export function locateRoot(): Promise<[Element, boolean]> {
   return new Promise((resolve) => {
     let observer: MutationObserver | undefined
@@ -28,16 +47,8 @@ export function locateRoot(): Promise<[Element, boolean]> {
         return true
       }
 
-      const repoVisibility = document.evaluate(
-        '//*[@id="repo-title-component"]/span[2]',
-        document,
-        null,
-        XPathResult.FIRST_ORDERED_NODE_TYPE,
-        null,
-      ).singleNodeValue
-
       observer?.disconnect()
-      resolve([root, repoVisibility?.textContent !== "Private"])
+      resolve([root, isPublicRepository()])
       return true
     }
 

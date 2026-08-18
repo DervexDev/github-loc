@@ -36,7 +36,7 @@ function main() {
         }
       }
 
-      fetchLoc(org, repo, branch)
+      fetchLoc(org, repo, branch, isPublic)
         .then((locData) => {
           updateStat(stat, locData.loc)
 

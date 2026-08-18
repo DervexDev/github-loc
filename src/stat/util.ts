@@ -5,20 +5,22 @@ export function now(): number {
   return Math.floor(Date.now() / 1000)
 }
 
+function getBranchFromSelector() {
+  const branchSelector =
+    document.querySelector<HTMLElement>("#ref-picker-repos-header-ref-selector") ??
+    document.querySelector<HTMLElement>('[data-testid="anchor-button"][aria-label$=" branch"]')
+  const ariaLabel = branchSelector?.getAttribute("aria-label")
+
+  return ariaLabel?.replace(/\s+branch$/i, "").trim() || branchSelector?.textContent?.trim()
+}
+
 export function getTarget() {
   const path = window.location.pathname.split("/")
-  let branch: string | undefined = path.slice(4).join("/")
+  const branchFromPath =
+    path[3] === "tree" || path[3] === "blob" ? path.slice(4).join("/") : undefined
+  const branch = getBranchFromSelector() || branchFromPath || ""
 
-  if (!branch) {
-    const branchSelector =
-      document.querySelector<HTMLElement>("#ref-picker-repos-header-ref-selector") ??
-      document.querySelector<HTMLElement>('[data-testid="anchor-button"][aria-label$=" branch"]')
-    const ariaLabel = branchSelector?.getAttribute("aria-label")
-
-    branch = ariaLabel?.replace(/\s+branch$/i, "").trim() || branchSelector?.textContent?.trim()
-  }
-
-  return [path[1], path[2], branch || ""]
+  return [path[1], path[2], branch]
 }
 
 export function getFilter(): Promise<string> {
