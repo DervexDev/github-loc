@@ -8,7 +8,9 @@ export default function Stat({ org, repo, branch }: Props) {
   return (
     <a
       className="Link Link--muted"
-      href={`https://ghloc.dev/${org}/${repo}?branch=${encodeURIComponent(branch)}`}
+      href={`https://ghloc.dev/${org}/${repo}${
+        branch ? `?branch=${encodeURIComponent(branch)}` : ""
+      }`}
     >
       <svg
         className="octicon octicon-repo-forked mr-2"

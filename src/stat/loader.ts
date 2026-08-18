@@ -45,9 +45,10 @@ export async function fetchLoc(org: string, repo: string, branch: string): Promi
     )
   }
 
-  const url = `https://ghloc.ifels.dev/${encodeURIComponent(org)}/${encodeURIComponent(
-    repo,
-  )}/${encodedBranch}?${params}`
+  const branchPath = encodedBranch ? `/${encodedBranch}` : ""
+  const url = `https://ghloc.ifels.dev/${encodeURIComponent(
+    org,
+  )}/${encodeURIComponent(repo)}${branchPath}?${params}`
   const headers = new Headers()
   const authToken = import.meta.env.VITE_AUTH_TOKEN
 

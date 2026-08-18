@@ -10,18 +10,15 @@ export function getTarget() {
   let branch: string | undefined = path.slice(4).join("/")
 
   if (!branch) {
-    branch = document
-      .evaluate(
-        '//*[@id="ref-picker-repos-header-ref-selector"]/span/span[1]/div/div[2]/span',
-        document,
-        null,
-        XPathResult.FIRST_ORDERED_NODE_TYPE,
-        null,
-      )
-      .singleNodeValue?.textContent?.trim()
+    const branchSelector =
+      document.querySelector<HTMLElement>("#ref-picker-repos-header-ref-selector") ??
+      document.querySelector<HTMLElement>('[data-testid="anchor-button"][aria-label$=" branch"]')
+    const ariaLabel = branchSelector?.getAttribute("aria-label")
+
+    branch = ariaLabel?.replace(/\s+branch$/i, "").trim() || branchSelector?.textContent?.trim()
   }
 
-  return [path[1], path[2], branch || "main"]
+  return [path[1], path[2], branch || ""]
 }
 
 export function getFilter(): Promise<string> {
