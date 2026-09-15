@@ -5,23 +5,22 @@ export function now(): number {
   return Math.floor(Date.now() / 1000)
 }
 
+function getBranchFromSelector() {
+  const branchSelector =
+    document.querySelector<HTMLElement>("#ref-picker-repos-header-ref-selector") ??
+    document.querySelector<HTMLElement>('[data-testid="anchor-button"][aria-label$=" branch"]')
+  const ariaLabel = branchSelector?.getAttribute("aria-label")
+
+  return ariaLabel?.replace(/\s+branch$/i, "").trim() || branchSelector?.textContent?.trim()
+}
+
 export function getTarget() {
   const path = window.location.pathname.split("/")
-  let branch: string | undefined = path.slice(4).join("/")
+  const branchFromPath =
+    path[3] === "tree" || path[3] === "blob" ? path.slice(4).join("/") : undefined
+  const branch = branchFromPath || getBranchFromSelector() || ""
 
-  if (!branch) {
-    branch = document
-      .evaluate(
-        '//*[@id="ref-picker-repos-header-ref-selector"]/span/span[1]/div/div[2]/span',
-        document,
-        null,
-        XPathResult.FIRST_ORDERED_NODE_TYPE,
-        null,
-      )
-      .singleNodeValue?.textContent?.trim()
-  }
-
-  return [path[1], path[2], branch || "main"]
+  return [path[1], path[2], branch]
 }
 
 export function getFilter(): Promise<string> {
