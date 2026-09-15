@@ -1,12 +1,18 @@
 import { DEFAULT_IGNORED_FILES } from "./defaults"
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete" && tab.url) {
-    const url = new URL(tab.url)
+  if (!tab.url || (changeInfo.status !== "complete" && !changeInfo.url)) {
+    return
+  }
 
-    if (url.pathname.split("/").length > 2) {
-      chrome.tabs.sendMessage(tabId, "github-loc:update").catch(() => {})
-    }
+  const url = new URL(tab.url)
+
+  if (url.hostname !== "github.com" && url.hostname !== "www.github.com") {
+    return
+  }
+
+  if (url.pathname.split("/").length > 2) {
+    chrome.tabs.sendMessage(tabId, "github-loc:update").catch(() => {})
   }
 })
 

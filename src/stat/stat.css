@@ -1,0 +1,5 @@
+#github-loc a:focus,
+#github-loc a:focus-visible,
+#github-loc a:visited {
+  text-decoration: none !important;
+}

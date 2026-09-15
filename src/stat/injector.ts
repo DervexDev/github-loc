@@ -2,7 +2,9 @@ import { JSX, render } from "preact"
 import { LocData } from "./loader"
 import { openFallbackPage } from "./util"
 
-function isPublicRepository() {
+export const STAT_ID = "github-loc"
+
+export function isPublicRepository() {
   const repoVisibility = document.evaluate(
     '//*[@id="repo-title-component"]/span[2]',
     document,
@@ -14,42 +16,57 @@ function isPublicRepository() {
   return repoVisibility?.textContent !== "Private"
 }
 
-export function locateRoot(): Promise<[Element, boolean]> {
+export function findAboutRoot(): HTMLElement | null {
+  return (
+    (document.evaluate(
+      '//h2[normalize-space(.)="About" and not(@class="heading-element")]',
+      document,
+      null,
+      XPathResult.FIRST_ORDERED_NODE_TYPE,
+      null,
+    ).singleNodeValue?.parentElement as HTMLElement | null) ?? null
+  )
+}
+
+let locateObserver: MutationObserver | undefined
+let locateGeneration = 0
+
+export function locateRoot(): Promise<[HTMLElement, boolean]> {
+  const generation = ++locateGeneration
+  locateObserver?.disconnect()
+  locateObserver = undefined
+
   return new Promise((resolve) => {
-    let observer: MutationObserver | undefined
-
     const tryLocate = () => {
-      const root = document.evaluate(
-        '//h2[normalize-space(.)="About" and not(@class="heading-element")]',
-        document,
-        null,
-        XPathResult.FIRST_ORDERED_NODE_TYPE,
-        null,
-      ).singleNodeValue?.parentElement
+      if (generation !== locateGeneration) {
+        return true
+      }
 
+      const root = findAboutRoot()
       if (!root) {
         return false
       }
 
-      observer?.disconnect()
+      locateObserver?.disconnect()
+      locateObserver = undefined
       resolve([root, isPublicRepository()])
       return true
     }
 
     if (!tryLocate()) {
-      observer = new MutationObserver(tryLocate)
-      observer.observe(document.documentElement, { childList: true, subtree: true })
+      locateObserver = new MutationObserver(tryLocate)
+      locateObserver.observe(document.documentElement, { childList: true, subtree: true })
     }
   })
 }
 
 export function injectStat(root: Element, stat: JSX.Element) {
-  const existing = root.querySelector<HTMLElement>("#github-loc")
+  const existing = root.querySelector<HTMLElement>(`#${STAT_ID}`)
   const div = existing ?? document.createElement("div")
 
   if (!existing) {
     div.className = "mt-2"
-    div.id = "github-loc"
+    div.id = STAT_ID
 
     if (root.lastElementChild?.firstElementChild?.textContent?.includes("Report")) {
       root.insertBefore(div, root.lastElementChild)
