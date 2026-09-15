@@ -2,43 +2,60 @@ import { JSX, render } from "preact"
 import { LocData } from "./loader"
 import { openFallbackPage } from "./util"
 
-function isInjected(root: Element) {
-  return root.querySelector("#github-loc") !== null
+function isPublicRepository() {
+  const repoVisibility = document.evaluate(
+    '//*[@id="repo-title-component"]/span[2]',
+    document,
+    null,
+    XPathResult.FIRST_ORDERED_NODE_TYPE,
+    null,
+  ).singleNodeValue
+
+  return repoVisibility?.textContent !== "Private"
 }
 
 export function locateRoot(): Promise<[Element, boolean]> {
   return new Promise((resolve) => {
-    const root = document.evaluate(
-      '//h2[text()="About" and not(@class="heading-element")]',
-      document,
-      null,
-      XPathResult.FIRST_ORDERED_NODE_TYPE,
-      null,
-    ).singleNodeValue?.parentElement
+    let observer: MutationObserver | undefined
 
-    const repoVisibility = document.evaluate(
-      '//*[@id="repo-title-component"]/span[2]',
-      document,
-      null,
-      XPathResult.FIRST_ORDERED_NODE_TYPE,
-      null,
-    ).singleNodeValue
+    const tryLocate = () => {
+      const root = document.evaluate(
+        '//h2[normalize-space(.)="About" and not(@class="heading-element")]',
+        document,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null,
+      ).singleNodeValue?.parentElement
 
-    if (root && !isInjected(root)) {
-      resolve([root, repoVisibility?.textContent !== "Private"])
+      if (!root) {
+        return false
+      }
+
+      observer?.disconnect()
+      resolve([root, isPublicRepository()])
+      return true
+    }
+
+    if (!tryLocate()) {
+      observer = new MutationObserver(tryLocate)
+      observer.observe(document.documentElement, { childList: true, subtree: true })
     }
   })
 }
 
 export function injectStat(root: Element, stat: JSX.Element) {
-  const div = document.createElement("div")
-  div.className = "mt-2"
-  div.id = "github-loc"
+  const existing = root.querySelector<HTMLElement>("#github-loc")
+  const div = existing ?? document.createElement("div")
 
-  if (root.lastElementChild?.firstElementChild?.textContent?.includes("Report")) {
-    root.insertBefore(div, root.lastElementChild)
-  } else {
-    root.appendChild(div)
+  if (!existing) {
+    div.className = "mt-2"
+    div.id = "github-loc"
+
+    if (root.lastElementChild?.firstElementChild?.textContent?.includes("Report")) {
+      root.insertBefore(div, root.lastElementChild)
+    } else {
+      root.appendChild(div)
+    }
   }
 
   render(stat, div)

@@ -41,7 +41,8 @@ export function loadLoc(org: string, repo: string, branch: string): Promise<LocD
 }
 
 export async function fetchLoc(org: string, repo: string, branch: string): Promise<LocData> {
-  let url = `https://ghloc-api.vercel.app/${org}/${repo}/${branch}`
+  const branchPath = branch ? `/${branch}` : ""
+  let url = `https://ghloc-api.vercel.app/${org}/${repo}${branchPath}`
 
   const accessToken = await chrome.storage.sync.get("accessToken")
   const ignoredFiles = await chrome.storage.sync.get("ignoredFiles")
