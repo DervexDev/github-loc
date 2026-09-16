@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- Clicking the LOC stat on a private repository now opens the local viewer instead of ghloc.vercel.app
+
+### Changed
+
+- Replaced the private-repo fallback page with a local ghloc-style viewer, including repo info from GitHub and a working filter defaulted from Ignored Files settings
+
 ## [1.0.7] - 2025-12-05
 
 ### Added

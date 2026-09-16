@@ -2,15 +2,32 @@ interface Props {
   org: string
   repo: string
   branch: string
+  isPrivate: boolean
 }
 
-export default function Stat({ org, repo, branch }: Props) {
+function publicHref(org: string, repo: string, branch: string) {
+  return `https://ghloc.vercel.app/${org}/${repo}${
+    branch ? `?branch=${encodeURIComponent(branch)}` : ""
+  }`
+}
+
+function privateHref(org: string, repo: string, branch: string) {
+  const url = new URL(chrome.runtime.getURL("src/details/index.html"))
+  url.searchParams.set("org", org)
+  url.searchParams.set("repo", repo)
+  if (branch) {
+    url.searchParams.set("branch", branch)
+  }
+  return url.toString()
+}
+
+export default function Stat({ org, repo, branch, isPrivate }: Props) {
   return (
     <a
       className="Link Link--muted"
-      href={`https://ghloc.vercel.app/${org}/${repo}${
-        branch ? `?branch=${encodeURIComponent(branch)}` : ""
-      }`}
+      href={isPrivate ? privateHref(org, repo, branch) : publicHref(org, repo, branch)}
+      target={isPrivate ? "_blank" : undefined}
+      rel={isPrivate ? "noopener" : undefined}
     >
       <svg
         className="octicon octicon-repo-forked mr-2"

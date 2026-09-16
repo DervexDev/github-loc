@@ -1,15 +1,8 @@
 import "./stat.css"
-import {
-  locateRoot,
-  injectStat,
-  updateStat,
-  updateLink,
-  updateFallbackLink,
-  findAboutRoot,
-  STAT_ID,
-} from "./injector"
-import { fetchLoc, loadLoc } from "./loader"
-import { getTarget, getFilter, now } from "./util"
+import { locateRoot, injectStat, updateStat, updateLink, findAboutRoot, STAT_ID } from "./injector"
+import { filterTree } from "../details/tree"
+import { fetchLoc, LocData, loadLoc } from "./loader"
+import { getTarget, getFilter, loadMatchFilter, now } from "./util"
 import Stat from "./Stat"
 
 const FETCH_RATE_LIMIT = 10 * 60
@@ -24,8 +17,17 @@ function targetKey(org: string, repo: string, branch: string) {
   return `${org}/${repo}/${branch}`
 }
 
+async function showLoc(stat: Element, locData: LocData, id: number) {
+  const filter = await loadMatchFilter()
+  if (id !== runId) {
+    return
+  }
+
+  updateStat(stat, filterTree(locData, filter).loc)
+}
+
 function main() {
-  locateRoot().then(([root, isPublic]) => {
+  locateRoot().then(([root, isPrivate]) => {
     const [org, repo, branch] = getTarget()
     if (!org || !repo) {
       return
@@ -43,6 +45,7 @@ function main() {
       org,
       repo,
       branch,
+      isPrivate,
     })
 
     const stat = injectStat(root, statJSX)
@@ -52,7 +55,7 @@ function main() {
         return
       }
 
-      if (isPublic) {
+      if (!isPrivate) {
         getFilter().then((filter) => {
           if (id === runId) {
             updateLink(stat, filter)
@@ -61,13 +64,9 @@ function main() {
       }
 
       if (locData) {
-        updateStat(stat, locData.loc)
+        showLoc(stat, locData, id)
 
         if (now() - locData.lastFetched < FETCH_RATE_LIMIT) {
-          if (!isPublic) {
-            updateFallbackLink(stat, locData, org, repo)
-          }
-
           return
         }
       }
@@ -78,11 +77,7 @@ function main() {
             return
           }
 
-          updateStat(stat, locData.loc)
-
-          if (!isPublic) {
-            updateFallbackLink(stat, locData, org, repo)
-          }
+          showLoc(stat, locData, id)
         })
         .catch((err) => {
           console.log("Failed to fetch LOC:", err)

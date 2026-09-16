@@ -1,8 +1,21 @@
-import { LocData } from "./loader"
-import Fallback from "./fallback.html?raw"
+import { DEFAULT_IGNORED_FILES } from "../defaults"
 
 export function now(): number {
   return Math.floor(Date.now() / 1000)
+}
+
+export function ignoredFilesToFilter(ignoredFiles: unknown): string {
+  const files = Array.isArray(ignoredFiles)
+    ? ignoredFiles.filter((file): file is string => typeof file === "string" && file.length > 0)
+    : DEFAULT_IGNORED_FILES
+
+  return files.map((file) => `!${file}$`).join(",")
+}
+
+export function loadMatchFilter(): Promise<string> {
+  return chrome.storage.sync.get("ignoredFiles").then((result) => {
+    return ignoredFilesToFilter(result.ignoredFiles)
+  })
 }
 
 function getBranchFromSelector() {
@@ -37,24 +50,4 @@ export function getFilter(): Promise<string> {
       }
     })
   })
-}
-
-export function openFallbackPage(data: LocData, org: string, repo: string) {
-  const locByLangs = Object.entries(data.locByLangs).sort((a, b) => b[1] - a[1])
-  const document = window.open()?.document
-
-  let locTable = ""
-
-  for (const [lang, loc] of locByLangs) {
-    const percent = ((loc / data.loc) * 100).toFixed(2)
-    locTable += `<tr><td>${lang}</td><td>${loc.toLocaleString()}</td><td>${percent}%</td></tr>\n`
-  }
-
-  const fallback = Fallback.replaceAll("$org", org)
-    .replaceAll("$repo", repo)
-    .replace("$loc", data.loc.toLocaleString())
-    .replace("$locTable", locTable)
-
-  document?.write(fallback)
-  document?.close()
 }

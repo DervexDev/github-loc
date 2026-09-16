@@ -1,12 +1,18 @@
 import { now } from "./util"
 
-export interface LocData {
+export type LocsChild = Locs | number
+
+export interface Locs {
   loc: number
   locByLangs: { [lang: string]: number }
+  children?: { [name: string]: LocsChild }
+}
+
+export interface LocData extends Locs {
   lastFetched: number
 }
 
-function makeKey(org: string, repo: string, branch: string) {
+export function makeKey(org: string, repo: string, branch: string) {
   return org + "/" + repo + "/" + branch
 }
 
@@ -26,13 +32,8 @@ export function loadLoc(org: string, repo: string, branch: string): Promise<LocD
     chrome.storage.local.get(key, (data) => {
       const locData = data[key] as LocData
 
-      if (
-        typeof locData === "object" &&
-        typeof locData.loc === "number" &&
-        typeof locData.locByLangs === "object" &&
-        typeof locData.lastFetched === "number"
-      ) {
-        resolve(locData as LocData)
+      if (isLocData(locData)) {
+        resolve(locData)
       } else {
         resolve(null)
       }
@@ -45,27 +46,14 @@ export async function fetchLoc(org: string, repo: string, branch: string): Promi
   let url = `https://ghloc-api.vercel.app/${org}/${repo}${branchPath}`
 
   const accessToken = await chrome.storage.sync.get("accessToken")
-  const ignoredFiles = await chrome.storage.sync.get("ignoredFiles")
 
   const headers = new Headers({
     "Ghloc-Authorization": import.meta.env.VITE_AUTH_TOKEN,
   })
 
-  if (Array.isArray(ignoredFiles.ignoredFiles) && ignoredFiles.ignoredFiles.length > 0) {
-    url += "?match="
-
-    for (const ignored of ignoredFiles.ignoredFiles) {
-      url += "!" + ignored + "$,"
-    }
-
-    url = url.substring(0, url.length - 1)
-  }
-
   if (typeof accessToken.accessToken === "string" && accessToken.accessToken.length > 0) {
     headers.append("Authorization", `Bearer ${accessToken.accessToken}`)
-
-    url += url.includes("?match") ? "&" : "?"
-    url += "salt=" + (await sha1(accessToken.accessToken))
+    url += "?salt=" + (await sha1(accessToken.accessToken))
   }
 
   let data: LocData = await fetch(url, { headers })
@@ -86,4 +74,41 @@ export async function fetchLoc(org: string, repo: string, branch: string): Promi
   chrome.storage.local.set({ [makeKey(org, repo, branch)]: data })
 
   return data
+}
+
+export function watchLoc(
+  org: string,
+  repo: string,
+  branch: string,
+  onChange: (data: LocData | null) => void,
+): () => void {
+  const key = makeKey(org, repo, branch)
+
+  loadLoc(org, repo, branch).then(onChange)
+
+  const listener = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
+    if (area !== "local" || !changes[key]) {
+      return
+    }
+
+    const value = changes[key].newValue
+    onChange(isLocData(value) ? value : null)
+  }
+
+  chrome.storage.onChanged.addListener(listener)
+  return () => chrome.storage.onChanged.removeListener(listener)
+}
+
+function isLocData(value: unknown): value is LocData {
+  if (typeof value !== "object" || value === null) {
+    return false
+  }
+
+  const data = value as LocData
+  return (
+    typeof data.loc === "number" &&
+    typeof data.locByLangs === "object" &&
+    data.locByLangs !== null &&
+    typeof data.lastFetched === "number"
+  )
 }

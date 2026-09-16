@@ -33,7 +33,11 @@ export default defineManifest({
       resources: ["img/logo-16.png", "img/logo-32.png", "img/logo-48.png", "img/logo-128.png"],
       matches: [],
     },
+    {
+      resources: ["src/details/index.html"],
+      matches: ["*://github.com/*"],
+    },
   ],
   permissions: ["storage"],
-  host_permissions: ["*://github.com/*"],
+  host_permissions: ["*://github.com/*", "https://api.github.com/*"],
 })

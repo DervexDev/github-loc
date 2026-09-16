@@ -1,19 +1,43 @@
 import { JSX, render } from "preact"
-import { LocData } from "./loader"
-import { openFallbackPage } from "./util"
 
 export const STAT_ID = "github-loc"
 
-export function isPublicRepository() {
-  const repoVisibility = document.evaluate(
-    '//*[@id="repo-title-component"]/span[2]',
-    document,
-    null,
-    XPathResult.FIRST_ORDERED_NODE_TYPE,
-    null,
-  ).singleNodeValue
+const PRIVATE_VISIBILITY = new Set(["Private", "Internal"])
 
-  return repoVisibility?.textContent !== "Private"
+export function isPrivateRepository() {
+  const publicMeta = document
+    .querySelector('meta[name="octolytics-dimension-repository_public"]')
+    ?.getAttribute("content")
+
+  if (publicMeta === "false") {
+    return true
+  }
+  if (publicMeta === "true") {
+    return false
+  }
+
+  const header = document.getElementById("repository-container-header")
+  for (const label of header?.querySelectorAll(".Label") ?? []) {
+    const text = label.textContent?.trim()
+    if (text && PRIVATE_VISIBILITY.has(text)) {
+      return true
+    }
+    if (text === "Public") {
+      return false
+    }
+  }
+
+  const legacyVisibility = document
+    .evaluate(
+      '//*[@id="repo-title-component"]/span[2]',
+      document,
+      null,
+      XPathResult.FIRST_ORDERED_NODE_TYPE,
+      null,
+    )
+    .singleNodeValue?.textContent?.trim()
+
+  return !!legacyVisibility && PRIVATE_VISIBILITY.has(legacyVisibility)
 }
 
 export function findAboutRoot(): HTMLElement | null {
@@ -49,7 +73,7 @@ export function locateRoot(): Promise<[HTMLElement, boolean]> {
 
       locateObserver?.disconnect()
       locateObserver = undefined
-      resolve([root, isPublicRepository()])
+      resolve([root, isPrivateRepository()])
       return true
     }
 
@@ -87,13 +111,4 @@ export function updateStat(stat: Element, value: number) {
 export function updateLink(stat: Element, filter: string) {
   const link = stat.firstElementChild!.getAttribute("href")!
   stat.firstElementChild!.setAttribute("href", link + filter)
-}
-
-export function updateFallbackLink(stat: HTMLElement, data: LocData, org: string, repo: string) {
-  stat = stat.firstElementChild! as HTMLElement
-  stat.removeAttribute("href")
-
-  stat.onclick = () => {
-    openFallbackPage(data, org, repo)
-  }
 }
