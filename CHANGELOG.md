@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.0.8] - 2026-09-16
+
 ### Fixed
 
 - Clicking the LOC stat on a private repository now opens the local viewer instead of ghloc.vercel.app
@@ -75,7 +77,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Initial release
 
-[unreleased]: https://github.com/DervexDev/github-loc/compare/1.0.7...HEAD
+[unreleased]: https://github.com/DervexDev/github-loc/compare/1.0.8...HEAD
+[1.0.8]: https://github.com/DervexDev/github-loc/compare/1.0.7...1.0.8
 [1.0.7]: https://github.com/DervexDev/github-loc/compare/1.0.6...1.0.7
 [1.0.6]: https://github.com/DervexDev/github-loc/compare/1.0.5...1.0.6
 [1.0.5]: https://github.com/DervexDev/github-loc/compare/1.0.4...1.0.5

@@ -10,14 +10,11 @@ Simple yet elegant Google Chrome extension that allows you to view Lines Of Code
 
 ## After Clicking
 
-<p float="left">
-  <img width="400" src="public/demo2.png"/>
-  <img width="400" src="public/demo3.png"/>
-</p>
+<img width="500" src="public/demo2.png"/>
 
 ## Available Settings
 
-<img width="300" src="public/demo4.png"/>
+<img width="300" src="public/demo3.png"/>
 
 ## Limitations
 
