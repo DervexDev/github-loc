@@ -36,18 +36,36 @@ export function getTarget() {
   return [path[1], path[2], branch]
 }
 
-export function getFilter(): Promise<string> {
-  return new Promise((resolve) => {
-    chrome.storage.sync.get("ignoredFiles").then((ignoredFiles) => {
-      if (Array.isArray(ignoredFiles.ignoredFiles)) {
-        let filter = "&filter="
+// Reserved first path segments that are never a repository owner.
+const NON_REPO_OWNERS = new Set([
+  "orgs",
+  "settings",
+  "notifications",
+  "marketplace",
+  "topics",
+  "collections",
+  "explore",
+  "search",
+  "sponsors",
+  "login",
+  "logout",
+  "new",
+  "organizations",
+  "pulls",
+  "issues",
+  "codespaces",
+  "features",
+  "enterprise",
+  "about",
+  "pricing",
+])
 
-        ignoredFiles.ignoredFiles.forEach((ignored) => {
-          filter += "%21" + ignored + "%24%2C" // !md$,
-        })
+/** Whether the path is a repository's main page, the only one with the About sidebar. */
+export function isRepoHomePath(pathname: string) {
+  const path = pathname.split("/").filter(Boolean)
+  if (path.length < 2 || NON_REPO_OWNERS.has(path[0].toLowerCase())) {
+    return false
+  }
 
-        resolve(filter.substring(0, filter.length - 3))
-      }
-    })
-  })
+  return path.length === 2 || (path[2] === "tree" && path.length > 3)
 }
