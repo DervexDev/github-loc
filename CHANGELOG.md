@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.0.9] - 2026-11-05
+
 ### Fixed
 
 - LOC stat not showing after GitHub's repository page redesign, or showing up in wrong places like PR contents. The stat is now anchored to the repository's forks stat and cloned from it, so it matches GitHub's current styling in both narrow and wide layouts
@@ -81,7 +83,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Initial release
 
-[unreleased]: https://github.com/DervexDev/github-loc/compare/1.0.8...HEAD
+[unreleased]: https://github.com/DervexDev/github-loc/compare/1.0.9...HEAD
+[1.0.9]: https://github.com/DervexDev/github-loc/compare/1.0.8...1.0.9
 [1.0.8]: https://github.com/DervexDev/github-loc/compare/1.0.7...1.0.8
 [1.0.7]: https://github.com/DervexDev/github-loc/compare/1.0.6...1.0.7
 [1.0.6]: https://github.com/DervexDev/github-loc/compare/1.0.5...1.0.6
