@@ -1,5 +1,8 @@
-#github-loc a:focus,
-#github-loc a:focus-visible,
-#github-loc a:visited {
+[data-github-loc] a:focus,
+[data-github-loc] a:focus-visible,
+[data-github-loc] a:visited,
+a[data-github-loc]:focus,
+a[data-github-loc]:focus-visible,
+a[data-github-loc]:visited {
   text-decoration: none !important;
 }

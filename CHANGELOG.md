@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- LOC stat not showing after GitHub's repository page redesign, or showing up in wrong places like PR contents. The stat is now anchored to the repository's forks stat and cloned from it, so it matches GitHub's current styling in both narrow and wide layouts
+
 ## [1.0.8] - 2026-09-16
 
 ### Fixed

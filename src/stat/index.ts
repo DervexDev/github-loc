@@ -1,127 +1,166 @@
 import "./stat.css"
-import { locateRoot, injectStat, updateStat, updateLink, findAboutRoot, STAT_ID } from "./injector"
+import { isPrivateRepository, removeStats, StatState, syncStats } from "./injector"
 import { filterTree } from "../details/tree"
 import { fetchLoc, LocData, loadLoc } from "./loader"
-import { getTarget, getFilter, loadMatchFilter, now } from "./util"
-import Stat from "./Stat"
+import { getTarget, isRepoHomePath, loadMatchFilter, now } from "./util"
 
 const FETCH_RATE_LIMIT = 10 * 60
-const NAV_EVENTS = ["turbo:load", "turbo:render", "popstate"] as const
+const NAV_EVENTS = ["turbo:load", "turbo:render", "popstate", "pageshow"] as const
+const PLACEHOLDER = "…"
 
-let runId = 0
-let lastTarget = ""
-let debounceTimer: ReturnType<typeof setTimeout> | undefined
-let missingTimer: ReturnType<typeof setTimeout> | undefined
-
-function targetKey(org: string, repo: string, branch: string) {
-  return `${org}/${repo}/${branch}`
+interface Current {
+  key: string
+  org: string
+  repo: string
+  branch: string
+  isPrivate: boolean
+  filter: string
+  locData: LocData | null
 }
 
-async function showLoc(stat: Element, locData: LocData, id: number) {
-  const filter = await loadMatchFilter()
+let current: Current | null = null
+let runId = 0
+let syncTimer: ReturnType<typeof setTimeout> | undefined
+let pendingForce = false
+
+function publicHref(org: string, repo: string, branch: string, filter: string) {
+  const url = new URL(`https://ghloc.vercel.app/${org}/${repo}`)
+  if (branch) {
+    url.searchParams.set("branch", branch)
+  }
+  if (filter) {
+    url.searchParams.set("filter", filter)
+  }
+  return url.toString()
+}
+
+function privateHref(org: string, repo: string, branch: string) {
+  const url = new URL(chrome.runtime.getURL("src/details/index.html"))
+  url.searchParams.set("org", org)
+  url.searchParams.set("repo", repo)
+  if (branch) {
+    url.searchParams.set("branch", branch)
+  }
+  return url.toString()
+}
+
+function stateOf(target: Current): StatState {
+  const { org, repo, branch, isPrivate, filter, locData } = target
+
+  return {
+    href: isPrivate ? privateHref(org, repo, branch) : publicHref(org, repo, branch, filter),
+    isPrivate,
+    value: locData ? filterTree(locData, filter).loc.toLocaleString() : PLACEHOLDER,
+  }
+}
+
+async function load(target: Current, id: number) {
+  const { org, repo, branch } = target
+
+  target.filter = await loadMatchFilter()
   if (id !== runId) {
     return
   }
 
-  updateStat(stat, filterTree(locData, filter).loc)
+  const cached = await loadLoc(org, repo, branch)
+  if (id !== runId) {
+    return
+  }
+
+  if (cached) {
+    target.locData = cached
+    render()
+
+    if (now() - cached.lastFetched < FETCH_RATE_LIMIT) {
+      return
+    }
+  }
+
+  try {
+    const fresh = await fetchLoc(org, repo, branch)
+    if (id === runId) {
+      target.locData = fresh
+      render()
+    }
+  } catch (err) {
+    console.log("Failed to fetch LOC:", err)
+  }
 }
 
-function main() {
-  locateRoot().then(([root, isPrivate]) => {
-    const [org, repo, branch] = getTarget()
-    if (!org || !repo) {
-      return
-    }
+function render() {
+  if (current) {
+    syncStats(current.org, current.repo, stateOf(current))
+  }
+}
 
-    const key = targetKey(org, repo, branch)
-    if (root.querySelector(`#${STAT_ID}`) && lastTarget === key) {
-      return
-    }
+function sync(force = false) {
+  if (!isRepoHomePath(location.pathname)) {
+    current = null
+    runId++
+    removeStats()
+    return
+  }
 
-    lastTarget = key
+  const [org, repo, branch] = getTarget()
+  const key = `${org}/${repo}/${branch}`
+
+  if (force || !current || current.key !== key) {
     const id = ++runId
 
-    const statJSX = Stat({
+    current = {
+      key,
       org,
       repo,
       branch,
-      isPrivate,
-    })
+      isPrivate: isPrivateRepository(),
+      filter: "",
+      locData: null,
+    }
 
-    const stat = injectStat(root, statJSX)
+    load(current, id)
+  }
 
-    loadLoc(org, repo, branch).then((locData) => {
-      if (id !== runId) {
-        return
-      }
-
-      if (!isPrivate) {
-        getFilter().then((filter) => {
-          if (id === runId) {
-            updateLink(stat, filter)
-          }
-        })
-      }
-
-      if (locData) {
-        showLoc(stat, locData, id)
-
-        if (now() - locData.lastFetched < FETCH_RATE_LIMIT) {
-          return
-        }
-      }
-
-      fetchLoc(org, repo, branch)
-        .then((locData) => {
-          if (id !== runId) {
-            return
-          }
-
-          showLoc(stat, locData, id)
-        })
-        .catch((err) => {
-          console.log("Failed to fetch LOC:", err)
-        })
-    })
-  })
+  render()
 }
 
-function requestUpdate() {
-  clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(main, 50)
+// Throttled rather than debounced, so a page that keeps mutating
+// (e.g. live timestamps) cannot postpone the sync indefinitely.
+function requestSync(force = false) {
+  pendingForce ||= force
+  if (syncTimer !== undefined) {
+    return
+  }
+
+  syncTimer = setTimeout(() => {
+    const forced = pendingForce
+    syncTimer = undefined
+    pendingForce = false
+    sync(forced)
+  }, 50)
 }
 
 chrome.runtime.onMessage.addListener((message) => {
   if (message === "github-loc:update") {
-    lastTarget = ""
-    requestUpdate()
+    requestSync()
+  }
+})
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "sync" && (changes.ignoredFiles || changes.accessToken)) {
+    requestSync(true)
   }
 })
 
 for (const event of NAV_EVENTS) {
-  window.addEventListener(event, () => {
-    lastTarget = ""
-    requestUpdate()
-  })
+  window.addEventListener(event, () => requestSync())
 }
 
-window.addEventListener("pageshow", (event) => {
-  if (event.persisted) {
-    lastTarget = ""
-    requestUpdate()
-  }
+// GitHub renders (and re-renders) the sidebar client-side, so watch the DOM
+// and re-sync whenever the stat goes missing, gets duplicated or the URL
+// changes. Syncing is idempotent, so our own DOM changes settle immediately.
+new MutationObserver(() => requestSync()).observe(document.documentElement, {
+  childList: true,
+  subtree: true,
 })
 
-new MutationObserver(() => {
-  clearTimeout(missingTimer)
-  missingTimer = setTimeout(() => {
-    if (document.getElementById(STAT_ID) || !findAboutRoot()) {
-      return
-    }
-
-    lastTarget = ""
-    main()
-  }, 50)
-}).observe(document.documentElement, { childList: true, subtree: true })
-
-main()
+sync()
