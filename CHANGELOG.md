@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.0.10] - 2026-11-05
+
 ### Fixed
 
 - LOC stat disappearing as soon as a link is clicked, before GitHub actually switches to the next page
@@ -88,7 +90,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Initial release
 
-[unreleased]: https://github.com/DervexDev/github-loc/compare/1.0.9...HEAD
+[unreleased]: https://github.com/DervexDev/github-loc/compare/1.0.10...HEAD
+[1.0.10]: https://github.com/DervexDev/github-loc/compare/1.0.9...1.0.10
 [1.0.9]: https://github.com/DervexDev/github-loc/compare/1.0.8...1.0.9
 [1.0.8]: https://github.com/DervexDev/github-loc/compare/1.0.7...1.0.8
 [1.0.7]: https://github.com/DervexDev/github-loc/compare/1.0.6...1.0.7
