@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+
+- LOC stat disappearing as soon as a link is clicked, before GitHub actually switches to the next page
+- LOC stat appearing with a delay when navigating back to the repository page
+
 ## [1.0.9] - 2026-11-05
 
 ### Fixed

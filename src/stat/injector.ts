@@ -80,17 +80,28 @@ export function isPrivateRepository() {
   return false
 }
 
-function normalizePath(path: string) {
-  return path.replace(/\/+$/, "").toLowerCase()
+export interface ForkItem {
+  /** Element wrapping the forks stat, our stat is inserted right after it. */
+  element: HTMLElement
+  org: string
+  repo: string
 }
 
-/** Returns the elements wrapping each forks stat of the given repository. */
-export function findForkItems(org: string, repo: string): HTMLElement[] {
-  const forksPath = normalizePath(`/${org}/${repo}/forks`)
-  const items: HTMLElement[] = []
+/**
+ * Returns the forks stats currently in the page, together with the repository
+ * each one belongs to (taken from the link itself, not from the URL, which
+ * GitHub changes before it swaps the page content on client-side navigation).
+ */
+export function findForkItems(): ForkItem[] {
+  const items: ForkItem[] = []
 
   for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href*="/forks"]')) {
-    if (link.host !== window.location.host || normalizePath(link.pathname) !== forksPath) {
+    if (link.host !== window.location.host) {
+      continue
+    }
+
+    const [org, repo, forks, ...rest] = link.pathname.split("/").filter(Boolean)
+    if (!org || !repo || forks !== "forks" || rest.length > 0) {
       continue
     }
     if (!link.querySelector("svg.octicon-repo-forked")) {
@@ -103,11 +114,17 @@ export function findForkItems(org: string, repo: string): HTMLElement[] {
     // Stats are usually wrapped in their own row element (e.g. `div.mt-2`),
     // clone that row so spacing matches. Fall back to the link itself.
     const parent = link.parentElement
-    const item = parent && parent.childElementCount === 1 ? parent : link
-    items.push(item)
+    const element = parent && parent.childElementCount === 1 ? parent : link
+    items.push({ element, org, repo })
   }
 
   return items
+}
+
+export function sameRepo(a: { org: string; repo: string }, b: { org: string; repo: string }) {
+  return (
+    a.org.toLowerCase() === b.org.toLowerCase() && a.repo.toLowerCase() === b.repo.toLowerCase()
+  )
 }
 
 function getLink(stat: HTMLElement) {
@@ -222,24 +239,24 @@ export function removeStats(keep: Set<Element> = new Set()) {
 }
 
 /**
- * Makes sure there is exactly one stat right below every forks stat of the
- * repository, all reflecting `state`. Removes stats anywhere else (e.g. left
- * over after navigating away). Returns whether at least one stat is present.
+ * Makes sure there is exactly one stat right below each of the given forks
+ * stats, all reflecting `state`, and removes stats anywhere else (e.g. ones
+ * whose forks stat GitHub removed or re-rendered).
  */
-export function syncStats(org: string, repo: string, state: StatState): boolean {
+export function syncStats(items: ForkItem[], state: StatState) {
   const keep = new Set<Element>()
 
-  for (const item of findForkItems(org, repo)) {
-    let stat = item.nextElementSibling as HTMLElement | null
+  for (const { element } of items) {
+    let stat = element.nextElementSibling as HTMLElement | null
 
     if (!stat?.hasAttribute(STAT_ATTR)) {
-      const created = createStat(item)
+      const created = createStat(element)
       if (!created) {
         continue
       }
 
       stat = created
-      item.after(stat)
+      element.after(stat)
     }
 
     applyState(stat, state)
@@ -247,6 +264,4 @@ export function syncStats(org: string, repo: string, state: StatState): boolean 
   }
 
   removeStats(keep)
-
-  return keep.size > 0
 }

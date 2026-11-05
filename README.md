@@ -2,7 +2,7 @@
 
 # GitHub LOC
 
-Simple yet elegant Google Chrome extension that allows you to view Lines Of Code of both public and private GitHub repositories with an option to exclude selected languages. Clicking on the stat will take you to the [ghloc.vercel.app](https://ghloc.vercel.app/DervexDev/github-loc) page with even more LOC details. Get the extension from the Chrome Web Store [here](https://chromewebstore.google.com/detail/git-loc/bdjkkjhffigoaeinkkpipfhjdccimecc).
+Simple yet elegant Google Chrome extension that allows you to view Lines Of Code of both public and private GitHub repositories with an option to exclude selected languages. Clicking on the stat will take you to the [ghloc.vercel.app](https://ghloc.vercel.app/DervexDev/github-loc) page with even more LOC details. Get the extension from the Chrome Web Store [here](https://chromewebstore.google.com/detail/bdjkkjhffigoaeinkkpipfhjdccimecc).
 
 ## Extension In Action
 
